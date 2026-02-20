@@ -1,0 +1,244 @@
+local _fishingActive = false
+
+-- [[ UI CONSTRUCTION ]] --
+local ScreenGui = Instance.new("ScreenGui")
+local MainFrame = Instance.new("Frame")
+local Sidebar = Instance.new("Frame")
+local Content = Instance.new("Frame")
+local TitleBar = Instance.new("Frame")
+local TitleLabel = Instance.new("TextLabel")
+local CloseBtn = Instance.new("TextButton")
+
+-- Setup UI Base
+ScreenGui.Name = "KuromiHub_Extreme"
+ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+ScreenGui.ResetOnSpawn = false
+
+-- Main Frame (Latar Grey, Stroke Ungu)
+MainFrame.Name = "MainFrame"
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+MainFrame.Position = UDim2.new(0.5, -200, 0.5, -150)
+MainFrame.Size = UDim2.new(0, 400, 0, 300)
+MainFrame.Active = true
+MainFrame.Draggable = true 
+
+local MainStroke = Instance.new("UIStroke")
+MainStroke.Thickness = 2
+MainStroke.Color = Color3.fromRGB(180, 0, 255) 
+MainStroke.Parent = MainFrame
+
+local MainCorner = Instance.new("UICorner")
+MainCorner.CornerRadius = UDim.new(0, 8)
+MainCorner.Parent = MainFrame
+
+-- Title Bar
+TitleBar.Name = "TitleBar"
+TitleBar.Parent = MainFrame
+TitleBar.BackgroundColor3 = Color3.fromRGB(180, 0, 255)
+TitleBar.Size = UDim2.new(1, 0, 0, 30)
+
+TitleLabel.Parent = TitleBar
+TitleLabel.Text = "  GET FISH BY: KUROMI v1.3 (ULTRA FPS)"
+TitleLabel.TextColor3 = Color3.new(1, 1, 1)
+TitleLabel.Font = Enum.Font.SourceSansBold
+TitleLabel.TextSize = 18
+TitleLabel.Size = UDim2.new(1, -30, 1, 0)
+TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+CloseBtn.Parent = TitleBar
+CloseBtn.Text = "X"
+CloseBtn.Size = UDim2.new(0, 30, 0, 30)
+CloseBtn.Position = UDim2.new(1, -30, 0, 0)
+CloseBtn.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+CloseBtn.TextColor3 = Color3.new(1, 1, 1)
+CloseBtn.BackgroundTransparency = 0.5
+
+-- Sidebar
+Sidebar.Name = "Sidebar"
+Sidebar.Parent = MainFrame
+Sidebar.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+Sidebar.Position = UDim2.new(0, 10, 0, 40)
+Sidebar.Size = UDim2.new(0, 100, 1, -50)
+
+local SideStroke = Instance.new("UIStroke")
+SideStroke.Color = Color3.fromRGB(180, 0, 255)
+SideStroke.Thickness = 1.5
+SideStroke.Parent = Sidebar
+Instance.new("UICorner", Sidebar)
+
+-- Content Area
+Content.Name = "Content"
+Content.Parent = MainFrame
+Content.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+Content.Position = UDim2.new(0, 120, 0, 40)
+Content.Size = UDim2.new(1, -130, 1, -50)
+
+local ContentStroke = Instance.new("UIStroke")
+ContentStroke.Color = Color3.fromRGB(180, 0, 255)
+ContentStroke.Thickness = 1.5
+ContentStroke.Parent = Content
+Instance.new("UICorner", Content)
+
+-- [[ TAB PAGES ]] --
+local FarmingPage = Instance.new("ScrollingFrame")
+FarmingPage.Parent = Content
+FarmingPage.Size = UDim2.new(1, -10, 1, -10)
+FarmingPage.Position = UDim2.new(0, 5, 0, 5)
+FarmingPage.BackgroundTransparency = 1
+FarmingPage.ScrollBarThickness = 2
+FarmingPage.Visible = true
+
+local TeleportPage = FarmingPage:Clone()
+TeleportPage.Parent = Content
+TeleportPage.Visible = false
+
+local function createLayout(parent)
+    local layout = Instance.new("UIListLayout", parent)
+    layout.Padding = UDim.new(0, 8)
+    layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+end
+createLayout(FarmingPage)
+createLayout(TeleportPage)
+
+-- [[ UI ELEMENTS ]] --
+local function createSidebarBtn(text, pos_y)
+    local btn = Instance.new("TextButton")
+    btn.Parent = Sidebar
+    btn.Size = UDim2.new(0.9, 0, 0, 35)
+    btn.Position = UDim2.new(0.05, 0, 0, pos_y)
+    btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    btn.Text = text
+    btn.TextColor3 = Color3.new(1, 1, 1)
+    btn.Font = Enum.Font.SourceSansBold
+    btn.TextSize = 14
+    Instance.new("UICorner", btn)
+    local s = Instance.new("UIStroke", btn)
+    s.Color = Color3.fromRGB(180, 0, 255)
+    return btn
+end
+
+local function createContentBtn(text, parent)
+    local btn = Instance.new("TextButton")
+    btn.Parent = parent
+    btn.Size = UDim2.new(0.95, 0, 0, 40)
+    btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    btn.Text = text
+    btn.TextColor3 = Color3.new(1, 1, 1)
+    btn.Font = Enum.Font.SourceSansBold
+    btn.TextSize = 15
+    Instance.new("UICorner", btn)
+    return btn
+end
+
+local farmTab = createSidebarBtn("FARMING", 10)
+local teleTab = createSidebarBtn("TELEPORT", 50)
+
+farmTab.MouseButton1Click:Connect(function() FarmingPage.Visible = true TeleportPage.Visible = false end)
+teleTab.MouseButton1Click:Connect(function() FarmingPage.Visible = false TeleportPage.Visible = true end)
+
+-- [[ FARMING LOGIC ]] --
+local fishBtn = createContentBtn("Instant Fishing: OFF", FarmingPage)
+local sellBtn = createContentBtn("Auto Sell (60s loop)", FarmingPage)
+local fpsBtn = createContentBtn("SUPER FPS BOOST (EXTREME)", FarmingPage)
+
+fishBtn.MouseButton1Click:Connect(function()
+    _fishingActive = not _fishingActive
+    fishBtn.Text = _fishingActive and "Fishing: ON (2s Delay)" or "Fishing: OFF"
+    fishBtn.BackgroundColor3 = _fishingActive and Color3.fromRGB(0, 100, 0) or Color3.fromRGB(60, 60, 60)
+    
+    if _fishingActive then
+        task.spawn(function()
+            while _fishingActive do
+                pcall(function()
+                    game:GetService("ReplicatedStorage").LevelSystem.ToServer.StartAutoFishing:FireServer()
+                    task.wait(2) 
+                    if not _fishingActive then return end
+                    local args = {{duration = 2.746399421012029, result = "SUCCESS", insideRatio = 0.8}, "218eb3c4-5e50-4fef-b061-eafc458c11d7"}
+                    game:GetService("ReplicatedStorage").Fishing.ToServer.ReelFinished:FireServer(unpack(args))
+                    task.wait(0.1)
+                    game:GetService("ReplicatedStorage").LevelSystem.ToServer.AutoFishingCatchReport:FireServer()
+                end)
+                task.wait(0.1)
+            end
+        end)
+    end
+end)
+
+sellBtn.MouseButton1Click:Connect(function()
+    sellBtn.Text = "Auto Sell Active!"
+    sellBtn.BackgroundColor3 = Color3.fromRGB(180, 0, 255)
+    task.spawn(function()
+        while true do
+            game:GetService("ReplicatedStorage").Economy.ToServer.SellUnder:FireServer(unpack({600}))
+            task.wait(60)
+        end
+    end)
+end)
+
+-- [[ ULTRA FPS BOOST LOGIC ]] --
+fpsBtn.MouseButton1Click:Connect(function()
+    fpsBtn.Text = "Optimizing... Please Wait"
+    fpsBtn.BackgroundColor3 = Color3.fromRGB(100, 0, 150)
+    
+    local lighting = game:GetService("Lighting")
+    local terrain = workspace:FindFirstChildOfClass("Terrain")
+
+    -- 1. Lighting & Global Settings
+    settings().Rendering.QualityLevel = 1
+    lighting.GlobalShadows = false
+    lighting.FogEnd = 9e9
+    lighting.Brightness = 0
+    
+    -- 2. Terrain Optimization
+    if terrain then
+        terrain.WaterWaveSize = 0
+        terrain.WaterWaveSpeed = 0
+        terrain.WaterReflectance = 0
+        terrain.WaterTransparency = 0
+    end
+
+    -- 3. Extreme Object Cleaning
+    for _, v in pairs(game:GetDescendants()) do
+        if v:IsA("Part") or v:IsA("MeshPart") or v:IsA("UnionOperation") or v:IsA("CornerWedgePart") or v:IsA("TrussPart") then
+            v.Material = Enum.Material.SmoothPlastic
+            v.Reflectance = 0
+            v.CastShadow = false
+        elseif v:IsA("Decal") or v:IsA("Texture") then
+            v:Destroy()
+        elseif v:IsA("ParticleEmitter") or v:IsA("Trail") or v:IsA("Fire") or v:IsA("Smoke") or v:IsA("Sparkles") then
+            v.Enabled = false
+        elseif v:IsA("PostProcessEffect") or v:IsA("BloomEffect") or v:IsA("BlurEffect") or v:IsA("SunRaysEffect") or v:IsA("ColorCorrectionEffect") then
+            v.Enabled = false
+        end
+    end
+
+    -- 4. Hide unnecessary GUI/Effects
+    for _, v in pairs(lighting:GetChildren()) do
+        v:Destroy()
+    end
+
+    fpsBtn.Text = "ULTRA BOOST ACTIVE"
+    fpsBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 0)
+end)
+
+-- [[ TELEPORT ]] --
+local locs = {
+    {"Kinyis Isle", CFrame.new(64.13, 1003.4, -655.35)},
+    {"Tropical Isle", CFrame.new(-1802.72, 1007.35, -1400.32)},
+    {"Deepsea", CFrame.new(1119.64, 999.53, 1393.28)},
+    {"Mira Nusa", CFrame.new(-399.4, 1005.68, 226.43)},
+    {"Majitos", CFrame.new(2081.57, 1000.69, -100.63)},
+    {"Skyler Zone", CFrame.new(-1366.86, 999.78, 1440.94)}
+}
+
+for _, v in pairs(locs) do
+    local b = createContentBtn(v[1], TeleportPage)
+    b.MouseButton1Click:Connect(function()
+        pcall(function()
+            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v[2]
+        end)
+    end)
+end
+
+CloseBtn.MouseButton1Click:Connect(function() MainFrame.Visible = not MainFrame.Visible end)
